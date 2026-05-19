@@ -13,12 +13,12 @@ The main notebook is [`phobert_vietnamese_student_feedback_classification.ipynb`
 | --- | --- |
 | `train/`, `dev/`, `test/` | UIT-VSFC split files with aligned sentences, sentiment labels, and topic labels |
 | `phobert_vietnamese_student_feedback_classification.ipynb` | End-to-end analysis and modeling notebook |
-| `baseline_5fold_cv_results.csv` | 5-fold cross-validation results for TF-IDF baselines |
-| `final_results.csv` | Held-out test results for baselines and PhoBERT models |
+| `results/baseline_5fold_cv_results.csv` | 5-fold cross-validation results for TF-IDF baselines |
+| `results/final_results.csv` | Held-out test results for baselines and PhoBERT models |
 | `requirements.txt` | Pinned Python package versions used by the notebook |
 | `nguyen20183.pdf` | Dataset/reference paper |
 
-Model checkpoints and large saved artifacts are intentionally ignored by `.gitignore`.
+Model checkpoints, confusion matrices, prediction dumps, and error-analysis CSV files are intentionally ignored by `.gitignore`.
 
 ## Environment
 
@@ -86,26 +86,26 @@ Class imbalance is handled with macro metrics and weighted cross-entropy for Pho
 
 | Task | Model | Accuracy | Macro F1 | Weighted F1 |
 | --- | --- | ---: | ---: | ---: |
-| Sentiment | TF-IDF + Naive Bayes | 0.8835 | 0.6011 | 0.8657 |
-| Sentiment | TF-IDF + Maximum Entropy | 0.8852 | 0.7238 | 0.8911 |
-| Topic | TF-IDF + Naive Bayes | 0.7663 | 0.4165 | 0.7010 |
-| Topic | TF-IDF + Maximum Entropy | 0.8248 | 0.7311 | 0.8359 |
+| Sentiment | TF-IDF + Naive Bayes | 0.88 | 0.60 | 0.87 |
+| Sentiment | TF-IDF + Maximum Entropy | 0.89 | 0.72 | 0.89 |
+| Topic | TF-IDF + Naive Bayes | 0.77 | 0.42 | 0.70 |
+| Topic | TF-IDF + Maximum Entropy | 0.83 | 0.73 | 0.84 |
 
-Held-out test results from `final_results.csv`:
+Held-out test results from `results/final_results.csv`:
 
 | Task | Model | Accuracy | Macro F1 | Weighted F1 |
 | --- | --- | ---: | ---: | ---: |
-| Sentiment | TF-IDF + Naive Bayes | 0.8680 | 0.5942 | 0.8448 |
-| Sentiment | TF-IDF + Maximum Entropy | 0.8680 | 0.7147 | 0.8731 |
-| Sentiment | Single-task PhoBERT | 0.9226 | 0.8218 | 0.9245 |
-| Sentiment | Multi-task PhoBERT | 0.9078 | 0.7970 | 0.9155 |
-| Topic | TF-IDF + Naive Bayes | 0.7919 | 0.4706 | 0.7403 |
-| Topic | TF-IDF + Maximum Entropy | 0.8089 | 0.7121 | 0.8231 |
-| Topic | Single-task PhoBERT | 0.8468 | 0.7558 | 0.8565 |
-| Topic | Multi-task PhoBERT | 0.8421 | 0.7617 | 0.8563 |
+| Sentiment | TF-IDF + Naive Bayes | 0.87 | 0.59 | 0.84 |
+| Sentiment | TF-IDF + Maximum Entropy | 0.87 | 0.71 | 0.87 |
+| Sentiment | Single-task PhoBERT | 0.93 | 0.84 | 0.93 |
+| Sentiment | Multitask PhoBERT | 0.93 | 0.83 | 0.93 |
+| Topic | TF-IDF + Naive Bayes | 0.79 | 0.47 | 0.74 |
+| Topic | TF-IDF + Maximum Entropy | 0.81 | 0.71 | 0.82 |
+| Topic | Single-task PhoBERT | 0.85 | 0.77 | 0.86 |
+| Topic | Multitask PhoBERT | 0.84 | 0.75 | 0.85 |
 
 ## Notes
 
 The sentiment task is dominated by negative and positive feedback, while neutral examples are rare. The topic task is also imbalanced, with lecturer feedback as the majority class and facility/others as minority classes. Because of this, weighted metrics can look strong even when minority-class recall is weak; macro F1 should be checked before drawing conclusions.
 
-Maximum Entropy is a strong traditional baseline, especially compared with Naive Bayes. PhoBERT improves both tasks on held-out testing, and the multi-task model slightly improves topic macro F1 while single-task PhoBERT remains stronger for sentiment in the current run.
+Maximum Entropy is a strong traditional baseline, especially compared with Naive Bayes. PhoBERT improves both tasks on held-out testing. In the current run, single-task PhoBERT gives the best topic macro F1, while single-task and multitask PhoBERT are very close on sentiment.

@@ -10,3 +10,6 @@ checkpoint-*/
 *.pt
 *.pth
 *.ckpt
+confusion_matrices/
+*_error_examples.csv
+*_predictions.csv
