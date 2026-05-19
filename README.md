@@ -1,23 +1,48 @@
 # UIT-VSFC PhoBERT Multi-task Classifier
 
-This project studies Vietnamese student feedback classification on the UIT-VSFC dataset. The target tasks are:
+This project studies Vietnamese student feedback classification on the UIT-VSFC dataset. It compares traditional TF-IDF baselines with single-task and multi-task PhoBERT models for two supervised tasks:
 
-- Sentiment classification: predict whether a feedback sentence is negative, neutral, or positive.
-- Topic classification: predict whether the feedback is about the lecturer, training program, facility, or another topic.
+- Sentiment classification: negative, neutral, or positive feedback.
+- Topic classification: lecturer, training program, facility, or others.
 
-The current notebook, [analysis.ipynb](/Users/thanhhai/UIT-VSFC/analysis.ipynb), focuses on exploratory data analysis and traditional machine-learning baselines. The project title mentions PhoBERT multi-task classification, so the baseline results should be treated as a reference point before adding or comparing transformer-based models.
+The main notebook is [`phobert_vietnamese_student_feedback_classification.ipynb`](phobert_vietnamese_student_feedback_classification.ipynb). It contains exploratory data analysis, baseline cross-validation, PhoBERT fine-tuning, test evaluation, confusion matrices, error analysis, and prediction demos.
+
+## Project Structure
+
+| Path | Purpose |
+| --- | --- |
+| `train/`, `dev/`, `test/` | UIT-VSFC split files with aligned sentences, sentiment labels, and topic labels |
+| `phobert_vietnamese_student_feedback_classification.ipynb` | End-to-end analysis and modeling notebook |
+| `baseline_5fold_cv_results.csv` | 5-fold cross-validation results for TF-IDF baselines |
+| `final_results.csv` | Held-out test results for baselines and PhoBERT models |
+| `requirements.txt` | Pinned Python package versions used by the notebook |
+| `nguyen20183.pdf` | Dataset/reference paper |
+
+Model checkpoints and large saved artifacts are intentionally ignored by `.gitignore`.
+
+## Environment
+
+Install the pinned dependencies:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+The notebook uses `underthesea` for Vietnamese word segmentation and `vinai/phobert-base` from Hugging Face Transformers. PhoBERT was pretrained on word-segmented Vietnamese text, so the notebook creates a separate `phobert_sentence` column for all PhoBERT dataloaders and prediction helpers while keeping raw sentences for display and error analysis.
+
+On Apple Silicon, the notebook defaults to CPU instead of MPS because PhoBERT can run out of shared-memory GPU allocation. You can set `USE_MPS = True` in the notebook if your machine has enough memory.
 
 ## Dataset Files
 
-Each split directory (`train/`, `dev/`, and `test/`) contains three aligned text files. Line `n` in each file belongs to the same feedback example.
+Each split directory contains three aligned text files. Line `n` in each file belongs to the same feedback example.
 
-### `sents.txt`
+| File | Description |
+| --- | --- |
+| `sents.txt` | Raw Vietnamese feedback sentence |
+| `sentiments.txt` | Sentiment label |
+| `topics.txt` | Topic label |
 
-Each line contains one original Vietnamese student feedback sentence.
-
-### `sentiments.txt`
-
-Each line contains one sentiment label:
+Sentiment labels:
 
 | Label | Meaning |
 | --- | --- |
@@ -25,9 +50,7 @@ Each line contains one sentiment label:
 | `1` | Neutral |
 | `2` | Positive |
 
-### `topics.txt`
-
-Each line contains one topic label:
+Topic labels:
 
 | Label | Meaning |
 | --- | --- |
@@ -36,7 +59,7 @@ Each line contains one topic label:
 | `2` | Facility |
 | `3` | Others |
 
-## Split Sizes
+Split sizes:
 
 | Split | Rows |
 | --- | ---: |
@@ -45,55 +68,44 @@ Each line contains one topic label:
 | Test | 3,166 |
 | Total | 16,175 |
 
-## EDA Notes
+## Modeling
 
-The sentiment task is mostly split between negative and positive labels, but neutral feedback is strongly underrepresented. This means accuracy can look high even when neutral examples are poorly detected, so macro precision, macro recall, and macro F1 should be checked.
+The notebook evaluates:
 
-The topic task is more imbalanced. Lecturer feedback is the majority class, while facility and others are minority classes. This can bias models toward predicting lecturer unless class weighting, sampling, or stronger contextual models are used.
+- TF-IDF + Naive Bayes
+- TF-IDF + Maximum Entropy, implemented with balanced logistic regression
+- Single-task PhoBERT for sentiment
+- Single-task PhoBERT for topic
+- Multi-task PhoBERT with shared encoder and separate sentiment/topic heads
 
-Sentence lengths are short overall. Across all splits, most feedback comments are brief, with a right-skewed distribution caused by a small number of longer comments.
+Class imbalance is handled with macro metrics and weighted cross-entropy for PhoBERT. Accuracy is reported, but macro precision, macro recall, and macro F1 are the main class-balanced metrics.
 
-## Baseline Results
+## Results
 
-The baseline in `analysis.ipynb` uses:
+5-fold cross-validation on the training split:
 
-- Vietnamese word segmentation with `underthesea`
-- TF-IDF features with unigram and bigram terms
-- Naive Bayes
-- Maximum Entropy, implemented as logistic regression with balanced class weights
-- 5-fold stratified cross-validation on the training split
+| Task | Model | Accuracy | Macro F1 | Weighted F1 |
+| --- | --- | ---: | ---: | ---: |
+| Sentiment | TF-IDF + Naive Bayes | 0.8835 | 0.6011 | 0.8657 |
+| Sentiment | TF-IDF + Maximum Entropy | 0.8852 | 0.7238 | 0.8911 |
+| Topic | TF-IDF + Naive Bayes | 0.7663 | 0.4165 | 0.7010 |
+| Topic | TF-IDF + Maximum Entropy | 0.8248 | 0.7311 | 0.8359 |
 
-The saved output is [baseline_5fold_cv_results.csv](/Users/thanhhai/UIT-VSFC/baseline_5fold_cv_results.csv).
+Held-out test results from `final_results.csv`:
 
-### Baseline Analysis
+| Task | Model | Accuracy | Macro F1 | Weighted F1 |
+| --- | --- | ---: | ---: | ---: |
+| Sentiment | TF-IDF + Naive Bayes | 0.8680 | 0.5942 | 0.8448 |
+| Sentiment | TF-IDF + Maximum Entropy | 0.8680 | 0.7147 | 0.8731 |
+| Sentiment | Single-task PhoBERT | 0.9226 | 0.8218 | 0.9245 |
+| Sentiment | Multi-task PhoBERT | 0.9078 | 0.7970 | 0.9155 |
+| Topic | TF-IDF + Naive Bayes | 0.7919 | 0.4706 | 0.7403 |
+| Topic | TF-IDF + Maximum Entropy | 0.8089 | 0.7121 | 0.8231 |
+| Topic | Single-task PhoBERT | 0.8468 | 0.7558 | 0.8565 |
+| Topic | Multi-task PhoBERT | 0.8421 | 0.7617 | 0.8563 |
 
-Maximum Entropy performs better than Naive Bayes on both tasks, especially in macro metrics. This suggests that the balanced logistic regression baseline handles minority classes better than Naive Bayes.
+## Notes
 
-For sentiment classification, weighted F1 is much higher than macro F1 because the neutral class is rare. For topic classification, the gap between weighted F1 and macro F1 is also important: strong weighted scores can still hide weak performance on facility and others.
+The sentiment task is dominated by negative and positive feedback, while neutral examples are rare. The topic task is also imbalanced, with lecturer feedback as the majority class and facility/others as minority classes. Because of this, weighted metrics can look strong even when minority-class recall is weak; macro F1 should be checked before drawing conclusions.
 
-## Acronyms and Normalized Tokens
-
-Some informal strings in the dataset are replaced by text-only tokens:
-
-| Original | Replacement |
-| --- | --- |
-| `:)` | `colonsmile` |
-| `:(` | `colonsad` |
-| `@@` | `colonsurprise` |
-| `<3` | `colonlove` |
-| `:d` | `colonsmilesmile` |
-| `:3` | `coloncontemn` |
-| `:v` | `colonbigsmile` |
-| `:_` | `coloncc` |
-| `:p` | `colonsmallsmile` |
-| `>>` | `coloncolon` |
-| `:">` | `colonlovelove` |
-| `^^` | `colonhihi` |
-| `:` | `doubledot` |
-| `:'(` | `colonsadcolon` |
-| `:’(` | `colonsadcolon` |
-| `:@` | `colondoublesurprise` |
-| `v.v` | `vdotv` |
-| `...` | `dotdotdot` |
-| `/` | `fraction` |
-| `c#` | `cshrap` |
+Maximum Entropy is a strong traditional baseline, especially compared with Naive Bayes. PhoBERT improves both tasks on held-out testing, and the multi-task model slightly improves topic macro F1 while single-task PhoBERT remains stronger for sentiment in the current run.

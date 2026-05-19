@@ -1,0 +1,9 @@
+Task,Model,Test Accuracy,Test Macro Precision,Test Macro Recall,Test Macro F1,Test Weighted Precision,Test Weighted Recall,Test Weighted F1
+Sentiment,TF-IDF + Naive Bayes,0.868,0.5795,0.6122,0.5942,0.8259,0.868,0.8448
+Sentiment,TF-IDF + Maximum Entropy,0.868,0.7064,0.7287,0.7147,0.8806,0.868,0.8731
+Sentiment,Single-task PhoBERT,0.9226,0.8091,0.8379,0.8218,0.9274,0.9226,0.9245
+Sentiment,Multitask PhoBERT,0.9078,0.7744,0.8445,0.797,0.9278,0.9078,0.9155
+Topic,TF-IDF + Naive Bayes,0.7919,0.636,0.4241,0.4706,0.7537,0.7919,0.7403
+Topic,TF-IDF + Maximum Entropy,0.8089,0.6852,0.7611,0.7121,0.8526,0.8089,0.8231
+Topic,Single-task PhoBERT,0.8468,0.7113,0.8225,0.7558,0.8797,0.8468,0.8565
+Topic,Multitask PhoBERT,0.8421,0.7329,0.83,0.7617,0.8846,0.8421,0.8563

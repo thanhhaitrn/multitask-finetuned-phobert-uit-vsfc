@@ -1,4 +1,4 @@
-Task name,Model,Accuracy,Precision-macro,Recall-macro,F1-macro,Precision-weighted,Recall-weighted,F1-weighted
+Task name,Model,Accuracy,Macro-precision,Macro-recall,Macro-F1,Weighted-precision,Weighted-recall,Weighted-F1
 Sentiment Classification,Naive Bayes,0.8835,0.5905,0.6142,0.6011,0.8514,0.8835,0.8657
 Sentiment Classification,Maximum Entropy,0.8852,0.7118,0.7471,0.7238,0.8996,0.8852,0.8911
 Topic Classification,Naive Bayes,0.7663,0.6344,0.3798,0.4165,0.7394,0.7663,0.701

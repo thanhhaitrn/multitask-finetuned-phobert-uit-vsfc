@@ -1,1 +1,12 @@
 .DS_Store
+.ipynb_checkpoints/
+__pycache__/
+
+# Model checkpoints and saved model artifacts
+single_phobert_sentiment/
+single_phobert_topic/
+model_checkpoints/
+checkpoint-*/
+*.pt
+*.pth
+*.ckpt
